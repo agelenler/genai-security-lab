@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GenAI Security Lab - Customer Support Assistant</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+<main>
+    <header>
+        <p>Customer Support Assistant</p>
+        <h1>Where does trust end?</h1>
+
+        <div class="intro-row">
+            <p>
+                Compare prompt experiments and backend security controls.
+                Check the actual response to determine whether the attack succeeded.
+            </p>
+
+            <div class="session-bar">
+                <span>Signed in as <strong id="user">Loading...</strong></span>
+                <button id="logout" type="button">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="notice">
+        All data is synthetic. SQL queries run against a disposable H2 database.
+        Refund execution is simulated. Do not deploy this intentionally vulnerable lab.
+    </div>
+
+    <div class="controls">
+        <label for="scenario">
+            Scenario
+            <select id="scenario">
+                <option value="DIRECT">1 · Direct prompt injection</option>
+                <option value="INDIRECT">2 · Indirect prompt injection</option>
+                <option value="IMAGE">3 · Image prompt injection</option>
+                <option value="DISCLOSURE">4 · Sensitive context</option>
+                <option value="OUTPUT">5 · Model output → SQL</option>
+                <option value="AGENCY">6 · Native refund tool → authorization</option>
+                <option value="RAG">7 · Retrieval access control</option>
+            </select>
+        </label>
+
+        <label for="mode">
+            Experiment setup
+            <select id="mode">
+                <option value="VULNERABLE">Vulnerable</option>
+                <option value="PROTECTED">Protected</option>
+            </select>
+        </label>
+
+        <label for="source">
+            Response source
+            <select id="source">
+                <option value="MODEL">Live Spring AI → Ollama</option>
+                <option value="FIXTURE">Authored fixture · no model call</option>
+            </select>
+        </label>
+    </div>
+
+    <label for="input">
+        Customer request / ticket
+        <textarea id="input" maxlength="3000"></textarea>
+    </label>
+
+    <div id="imagePanel" hidden>
+        <label for="imageFile">
+            Product image (PNG/JPEG, maximum 5 MB)
+            <input
+                    id="imageFile"
+                    type="file"
+                    accept="image/png,image/jpeg"
+            >
+        </label>
+
+        <p>
+            The example buttons load a clean or faint-instruction image.
+            The customer request stays the same. Use a vision-and-tool-capable model.
+        </p>
+
+        <img
+                id="preview"
+                class="image-preview"
+                alt="Selected product image"
+                hidden
+        >
+    </div>
+
+    <div class="actions">
+        <button id="normal" type="button">Load normal example</button>
+        <button id="attack" type="button">Load attack example</button>
+        <button id="run" type="button">Run experiment</button>
+    </div>
+
+    <p id="status" role="status">Choose an example. A live call requires Ollama.</p>
+
+    <div class="grid">
+        <section>
+            <h2 id="outputTitle">Model output / query value</h2>
+            <p class="pill" id="badge"></p>
+            <pre id="output">No result yet.</pre>
+        </section>
+
+        <section>
+            <h2>Experiment details</h2>
+            <pre id="evidence">No result yet.</pre>
+        </section>
+    </div>
+
+    <p id="note"></p>
+
+    <details>
+        <summary>Inspect text messages (image metadata is shown in experiment details)</summary>
+        <pre id="messages"></pre>
+    </details>
+
+    <p>
+        Fixtures are deliberately identical across modes. They test backend boundaries;
+        they do not demonstrate that a protected model actually leaked data.
+    </p>
+</main>
+</body>
+</html>

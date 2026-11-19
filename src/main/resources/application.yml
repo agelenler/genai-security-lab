@@ -1,0 +1,53 @@
+server:
+  address: 127.0.0.1
+  port: 8080
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  application:
+    name: genai-security
+  http:
+    clients:
+      connect-timeout: 5s
+      read-timeout: 90s
+      imperative:
+        factory: jdk
+  ai:
+    model:
+      chat: ollama
+      embedding: none
+    chat:
+      client:
+        enabled: false
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      init:
+        pull-model-strategy: never # Install explicitly before recording; fixtures need no Ollama.
+      chat:
+        model: ${OLLAMA_MODEL:vicuna:7b}
+        temperature: 0.0
+        num-predict: 300
+        num-ctx: 4096
+  datasource:
+    url: jdbc:h2:mem:securitylab;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+logging:
+  level:
+    com.genai.security: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.web.client: DEBUG
+
+lab:
+  models:
+    tools: ${OLLAMA_TOOL_MODEL:mistral-small3.2:latest}
+    vision: ${OLLAMA_VISION_MODEL:ministral-3:3b}
