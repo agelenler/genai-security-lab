@@ -3,6 +3,7 @@ package com.genai.security.controller;
 import com.genai.security.dto.Result;
 import com.genai.security.dto.RunRequest;
 import com.genai.security.service.CustomerSupportService;
+import com.genai.security.service.ImageInjectionService;
 import com.genai.security.tool.record.ToolAccess;
 import com.genai.security.tool.record.Workflow;
 import jakarta.validation.Valid;
@@ -24,10 +25,10 @@ import java.util.stream.Collectors;
 public class ApplicationController {
     private final CustomerSupportService customerSupportService;
 
-    private final com.genai.security.service.ImageInjectionService imageService;
+    private final ImageInjectionService imageService;
 
     ApplicationController(CustomerSupportService customerSupportService,
-                          com.genai.security.service.ImageInjectionService imageService) {
+                          ImageInjectionService imageService) {
         this.customerSupportService = customerSupportService;
         this.imageService = imageService;
     }
