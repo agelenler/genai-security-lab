@@ -5,6 +5,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
@@ -18,7 +19,7 @@ public class GlobalExceptionHandler {
                 "Invalid request. Select a valid scenario, mode and source; input must contain 1–3000 characters."));
     }
 
-    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
     ResponseEntity<Map<String, String>> oversizedImage(Exception ignored) {
         return ResponseEntity.status(413).body(Map.of("message", "Choose an image up to 5 MB"));
     }

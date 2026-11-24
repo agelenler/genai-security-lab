@@ -47,51 +47,6 @@ Optional environment settings: `OLLAMA_MODEL` (default `vicuna:7b`), `OLLAMA_BAS
 
 **Boundaries of the demonstration:** retrieval is an in-memory fixture, not vector search. Refund and imageDetails scenarios use native Spring AI tool calling. Both require live MODEL source; fixtures are rejected. No payment is executed and no approval workflow is implemented. SQL runs against a real disposable database. All order data and secret markers are synthetic.
 
-## Recording flow (about 20–25 minutes of screen demonstrations)
-
-1. **Direct:** load normal example, live model, baseline prompt. Run the attack. Change to stronger prompt and repeat. A refusal means that attack failed in that run. The UI intentionally does not label either prompt mode as proven vulnerable or secure. See `docs/prompt-injection-results.md` for the success criteria and the Mistral example.
-2. **Indirect:** compare normal and attack ticket text. Inspect the exact model messages. Explain why a retrieved document is not an instruction source.
-3. **Disclosure:** run a live extraction attempt in both modes. Inspect messages to show the marker is absent in protected mode. Do not infer actual leakage solely from a coincidentally matching generated value.
-4. **Output:** start with live normal input (`Find order ORD-100`) and compare the returned row. Try the live attack. Then choose FIXTURE: vulnerable returns 3 rows; protected returns 0. Explain that the fixture injects a known hostile model-output value to verify the downstream defense.
-5. **Agency:** use live normal and attack examples. When the model calls the tool, vulnerable reports SIMULATED_EXECUTION, while protected denies Alice access to Bob's order. Check toolInvocations; model text alone is never executed. With a valid live Alice proposal, protected stops at REQUIRES_REVIEW.
-6. **RAG:** compare the exact retrieved document IDs and outgoing system message. Protected Alice context does not include Bob's marker. This boundary is deterministic even if model answers vary.
-
-FIXTURE outputs are **authored, fixed attack examples**, not recorded model responses. They are identical in both modes and ignore the input text. Consequently, a disclosure fixture prints the same dummy marker even in protected mode; that does NOT demonstrate protected-context leakage. Prefer live mode for prompt-behavior lessons, fixtures for deterministic backend-security lessons.
-
-## Code tour
-
-- `CustomerSupportService`: readable scenario orchestration; prompt/context differences; explicit fixture path.
-- `config/AIProviderConfig`: defines `@Bean("ollamaChatClient")` with `ChatClient.builder(ollamaChatModel).build()`, following the other course.
-- `OllamaModelClient`: injects the qualified Spring AI client and calls `.prompt().messages(...).call().content()`. No application-written Ollama REST request or response parsing remains.
-- `OrderRepository`: vulnerable string concatenation versus bound value + ownership predicate.
-- `RefundPolicyService`: backend policy checks independent of model instructions.
-- `SecurityConfig`: real Spring Security Basic authentication and CSRF protection.
-- `ApplicationController`: uses the authenticated principal; accepts no user/tenant identity from the prompt.
-- `static/index.html`: recording-friendly page; uses `textContent` for all model output.
-- `scripts/run-demo.py`: CLI/API examples with Basic authentication, session cookie and CSRF token.
-- `docs/lecture-guide.md`: 85-minute outline and recording notes.
-- `docs/slide-outline.md`: slide-by-slide talking points (not a PowerPoint file).
-
-This uses **Spring Boot 4.0.9 + Spring AI 2.0.2 + Java 21**. Java 25 can also run/build the project; the source target remains Java 21 to keep the lab accessible. Dependencies use Maven Central (no milestone repository).
-
-The Ollama starter auto-configures `OllamaChatModel`. The named `ollamaChatClient` bean and qualifier-based injection match the other course. Two explicit message roles preserve raw experiment text, including JSON braces, without treating it as a prompt template. Refund calls use `.tools(new RefundTools(...))`; Spring AI deserializes native tool arguments and invokes the annotated callback. The application no longer parses model prose as a refund proposal. `returnDirect=true` returns the tool result without another generation.
-
-In Spring AI 2, configure **`spring.ai.ollama.chat.model`**, `temperature`, `num-predict` and `num-ctx` directly below `chat`. The older `chat.options.*` nesting is deprecated. Use `num-predict` for the output-token limit rather than copying the other repository's `max-new-tokens` setting. The model is configurable through `OLLAMA_MODEL`; its default is `vicuna:7b`.
-
-See `docs/repository-alignment.md` for exactly what was reused and the source commit, and `docs/ollama-setup.md` for a short presentation/install sequence.
-
-## Security and teaching limitations
-
-This intentionally vulnerable local lab binds to `127.0.0.1`. Do not expose it or reuse its public teaching credentials in a deployment. The API retains VULNERABLE/PROTECTED values for compatibility. In direct/indirect prompt experiments the UI displays Baseline prompt / Stronger prompt; for deterministic backend comparisons it displays Vulnerable implementation / Protected boundary. These are setups, not attack verdicts. Even protected mode is not a complete production security implementation.
-
-Model requests are limited to 3,000 user characters, two concurrent calls, 300 generated tokens, a 4,096-token model context setting, a 5-second connection timeout and a 90-second response timeout. There are no retries or autonomous loops. These limits are demonstration controls, not comprehensive request-byte limits, spend quotas, abuse protection or distributed rate limiting.
-
-Only fixed synthetic documents enter this demo. Real RAG also needs ingestion permissions, source integrity, retrieval ACL enforcement, authorization updates and deletion handling. Real refund systems need durable approval records tied to exact arguments, remaining-balance checks, idempotency, transactional execution and audit trails. Raw model messages are exposed in the lab page for teaching; do not reproduce that diagnostic behavior with real private data.
-
-## Verification
-
-Run `./mvnw clean verify`. Tests cover SQL injection, customer isolation, refund policy, pre-model context filtering, real authentication, CSRF, request limits, native tool arguments, imageDetails media serialization, protected file denial and the Ollama HTTP contract. Automated model tests use a local HTTP stub / test double, not an actual LLM. See `docs/validation.md` for verification performed before packaging.
-
 ## References
 
 - [OWASP LLM Top 10 (2025)](https://genai.owasp.org/llm-top-10/)
