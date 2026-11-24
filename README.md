@@ -1,7 +1,5 @@
 # GenAI Security Lab — Spring Boot 4 / Spring AI
 
-A standalone companion for an approximately 85-minute course update, using the named Ollama ChatClient pattern from Ali Gelenler's GenAI course. Students run prepared examples; they do not build a new application during the section.
-
 ## Requirements and quick start
 
 - Java 21 or newer (build targets Java 21).
